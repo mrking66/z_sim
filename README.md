@@ -1,27 +1,11 @@
-# Z-Sim 强化学习机器人仿真环境1.  Clone this repository:
-
-    git clone https://github.com/your-username/your-repo-name.git
-
-这是一个用于机器人强化学习研究的仿真环境项目。    cd your-repo-name
-
-2.  Set up a virtual environment and install dependencies.
-
-## 安装说明    python -m venv rl_env
-
-    # On Windows
-
-1. 克隆此仓库：        .\rl_env\Scripts\activate
-
-```bash    # On Linux/MacOS
-
-git clone https://github.com/mrking66/z_sim.git        source rl_env/bin/activate
-
-cd z_sim    pip install -r requirements.txt
-
-```3.  Run the code!
-
-    python zeroth_train.py
-2. 设置虚拟环境并安装依赖：
+# Z-Sim 强化学习机器人仿真环境
+1.克隆仓库:
+```bash
+git clone https://github.com/mrking66/z_sim.git
+cd z_sim
+```
+    
+2.创建虚拟环境并安装依赖:
 ```bash
 # 创建虚拟环境
 python -m venv rl_env
@@ -36,10 +20,13 @@ source rl_env/bin/activate
 pip install -r requirements.txt
 ```
 
+
 3. 运行代码：
 ```bash
 python zeroth_train.py
 ```
+
+
 
 ## 项目结构
 

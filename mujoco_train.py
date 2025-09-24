@@ -16,15 +16,15 @@ class RewardLoggerCallback(BaseCallback):
         
     def _on_step(self) -> bool:
         if len(self.locals.get("infos", [])) > 0:
-            info = self.locals["infos"][0]  # 获取第一个环境的信息
+            info = self.locals["infos"][0]  # Get info from the first environment
             if "rewards" in info:
                 rewards = info["rewards"]
-                # 记录每个奖励组件
+                # Log each reward component
                 for name, value in rewards.items():
                     self.logger.record(f"rewards/{name}", value)
         return True
 
-# 导入你实现的 ZerothEnv（确保 zeroth_env.py 在同一目录并能导入）
+# Import your implemented ZerothEnv (ensure zeroth_env.py is in the same directory and can be imported)
 from mujoco_env import ZerothEnv
 
 def make_env_fn(xml_path, render_mode=None, seed=0):
@@ -36,60 +36,60 @@ def make_env_fn(xml_path, render_mode=None, seed=0):
 
 def main():
     # --------------------------
-    # 配置
+    # Configuration
     # --------------------------
-    xml_path = "mechanism/robot_fixed.xml"   # 你的模型文件路径
+    xml_path = "mechanism/robot_fixed.xml"   # Your model file path
     
-    # 选择是否继续训练
-    continue_training = False  # 设置为True来继续训练，False来从头开始
+    # Choose whether to continue training
+    continue_training = False  # Set to True to continue training, False to start from scratch
     if continue_training:
-        # 使用已有的训练结果目录
+        # Use existing training results directory
         log_dir = "logs/ppo_20250918_111610"
-        model_path = os.path.join(log_dir, "checkpoints/ppo_checkpoint_43100000_steps.zip")  # 或使用 "best_model/best_model.zip"
+        model_path = os.path.join(log_dir, "checkpoints/ppo_checkpoint_43100000_steps.zip")  # Or use "best_model/best_model.zip"
         vec_normalize_path = os.path.join(log_dir, "vec_normalize.pkl")
     else:
-        # 创建新的训练目录
+        # Create new training directory
         log_dir = os.path.join("logs", "ppo_" + datetime.now().strftime("%Y%m%d_%H%M%S"))
         os.makedirs(log_dir, exist_ok=True)
         model_path = None
         vec_normalize_path = None
 
-    # 训练参数
+    # Training parameters
     total_timesteps = 100_000_000
-    n_envs = 12   # 并行环境个数（CPU越多可以增大）
-    eval_freq = 50_000  # 每多少 step 评估一次（整个向量环境的步数）
+    n_envs = 12   # Number of parallel environments (can increase with more CPUs)
+    eval_freq = 50_000  # Evaluate every how many steps (steps across the vector environment)
     n_eval_episodes = 5
 
     # --------------------------
-    # 创建并行环境（训练用不渲染）
+    # Create parallel environments (for training, no rendering)
     # --------------------------
-    # 使用 make_vec_env 简化创建 SubprocVecEnv
-    # 注意：render_mode=None 用于训练（no rendering）。
+    # Use make_vec_env to simplify creating SubprocVecEnv
+    # Note: render_mode=None for training (no rendering).
     vec_env = make_vec_env(
         make_env_fn(xml_path, render_mode=None),
         n_envs=n_envs,
-        vec_env_cls=SubprocVecEnv,   # 若本机 Windows 或出现问题，可改为 DummyVecEnv
+        vec_env_cls=SubprocVecEnv,   # If on Windows or having issues, can change to DummyVecEnv
         seed=0,
     )
 
-    # 对观测和奖励进行归一化（在 RL 中通常很有用）
+    # Normalize observations and rewards (usually helpful in RL)
     if continue_training and vec_normalize_path and os.path.exists(vec_normalize_path):
-        # 加载已有的归一化参数
+        # Load existing normalization parameters
         vec_env = VecNormalize.load(vec_normalize_path, vec_env)
         print(f"Loaded VecNormalize parameters from {vec_normalize_path}")
     else:
         vec_env = VecNormalize(vec_env, norm_obs=True, norm_reward=True, clip_obs=10.0)
 
     # --------------------------
-    # 回调：评估、检查点
+    # Callbacks: Evaluation, Checkpoints
     # --------------------------
-    # 评估环境（单进程，开启渲染为 None，因为评估不需要图形）
+    # Evaluation environment (single process, render_mode=None as evaluation doesn't need graphics)
     eval_env = DummyVecEnv([make_env_fn(xml_path, render_mode=None, seed=1000)])
     eval_env = VecNormalize(eval_env, training=False, norm_obs=True, norm_reward=False, clip_obs=10.0)
-    # 把训练环境的归一化参数拷贝给 eval_env（保持一致尺度）
+    # Copy normalization parameters from training environment to eval_env (maintain consistent scale)
     eval_env.obs_rms = vec_env.obs_rms
 
-    # 当达到目标奖励就停止训练（可选）
+    # Stop training when target reward is reached (optional)
     stop_callback = StopTrainingOnRewardThreshold(reward_threshold=20000.0, verbose=1)
 
     eval_callback = EvalCallback(
@@ -107,12 +107,12 @@ def main():
                                              name_prefix="ppo_checkpoint")
 
     # --------------------------
-    # 日志（TensorBoard）
+    # Logging (TensorBoard)
     # --------------------------
     tmp_logger = configure(log_dir, ["stdout", "tensorboard"])
 
     # --------------------------
-    # 创建或加载模型
+    # Create or load model
     # --------------------------
     policy_kwargs = dict(
         # net architecture example
@@ -120,19 +120,19 @@ def main():
     )
 
     if continue_training and model_path and os.path.exists(model_path):
-        # 加载已有的模型
+        # Load existing model
         model = PPO.load(model_path, env=vec_env, verbose=1)
-        # 更新学习率（这是你想要修改的参数）
-        model.learning_rate = 3e-4  # 修改学习率
+        # Update learning rate (parameter you want to modify)
+        model.learning_rate = 3e-4  # Modify learning rate
         print(f"Loaded model from {model_path} with new learning rate: {model.learning_rate}")
     else:
-        # 创建新模型
+        # Create new model
         model = PPO(
             policy="MlpPolicy",
             env=vec_env,
             verbose=1,
             tensorboard_log=log_dir,
-            learning_rate=3e-4,  # 新的学习率
+            learning_rate=3e-4,  # New learning rate
             ent_coef=0.001,
             gamma=0.99,
             n_steps=2048 ,
@@ -143,11 +143,11 @@ def main():
     
     model.set_logger(tmp_logger)
 
-    # 创建奖励记录器回调
+    # Create reward logger callback
     reward_logger = RewardLoggerCallback()
 
     # --------------------------
-    # 训练
+    # Training
     # --------------------------
     try:
         model.learn(total_timesteps=total_timesteps, 
@@ -155,12 +155,12 @@ def main():
     except KeyboardInterrupt:
         print("Training interrupted by user.")
     finally:
-        # 保存最终模型和归一化参数
+        # Save final model and normalization parameters
         model.save(os.path.join(log_dir, "final_model"))
         vec_env.save(os.path.join(log_dir, "vec_normalize.pkl"))
         print(f"Model saved to {log_dir}")
 
-        # 关闭环境
+        # Close environments
         vec_env.close()
         eval_env.close()
 

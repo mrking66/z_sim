@@ -1,43 +1,45 @@
-# Z-Sim 强化学习机器人仿真环境
-1.克隆仓库:
+# Z-Sim: Reinforcement Learning Robot Simulation Environment
+
+A simulation environment for robotics reinforcement learning research.
+
+## Installation Guide
+
+1. Clone the repository:
 ```bash
 git clone https://github.com/mrking66/z_sim.git
 cd z_sim
 ```
-    
-2.创建虚拟环境并安装依赖:
+
+2. Set up virtual environment and install dependencies:
 ```bash
-# 创建虚拟环境
+# Create virtual environment
 python -m venv rl_env
 
-# Windows系统激活虚拟环境
+# Activate virtual environment on Windows
 .\rl_env\Scripts\activate
 
-# Linux/MacOS系统激活虚拟环境
+# Activate virtual environment on Linux/MacOS
 source rl_env/bin/activate
 
-# 安装依赖包
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-
-3. 运行代码：
+3. Run the code:
 ```bash
 python mujoco_train.py
 ```
 
-
-
-## 项目结构
+## Project Structure
 
 ```
 z_sim/
-├── mechanism/           # 机器人模型文件
-│   ├── meshes/         # 机器人各部件的3D模型文件
-│   ├── humanoid.mjcf   # MuJoCo模型文件
-│   ├── joints.py       # 关节定义
-│   └── robot_fixed.xml # 机器人配置文件
-├── mujoco_env.py       # 仿真环境定义
-├── mujoco_train.py     # 训练脚本
-└── requirements.txt    # 项目依赖
+├── mechanism/           # Robot model files
+│   ├── meshes/         # 3D model files for robot parts
+│   ├── humanoid.mjcf   # MuJoCo model file
+│   ├── joints.py       # Joint definitions
+│   └── robot_fixed.xml # Robot configuration file
+├── mujoco_env.py       # Simulation environment definition
+├── mujoco_train.py     # Training script
+└── requirements.txt    # Project dependencies
 ```

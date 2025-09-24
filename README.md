@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 3. 运行代码：
 ```bash
-python zeroth_train.py
+python mujoco_train.py
 ```
 
 
@@ -37,7 +37,7 @@ z_sim/
 │   ├── humanoid.mjcf   # MuJoCo模型文件
 │   ├── joints.py       # 关节定义
 │   └── robot_fixed.xml # 机器人配置文件
-├── zeroth_env.py       # 仿真环境定义
-├── zeroth_train.py     # 训练脚本
+├── mujoco_env.py       # 仿真环境定义
+├── mujoco_train.py     # 训练脚本
 └── requirements.txt    # 项目依赖
 ```
